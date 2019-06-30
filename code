@@ -1,0 +1,426 @@
+
+#include<iostream>
+#include<string>
+# include <stdlib.h>
+#include"sstream"
+#include"shiyan2.h"
+#include<math.h>
+using namespace std;
+class Fu_num
+{
+private:
+    string m;
+    float real, imag;
+    char k1[10] = { 0 }, k2[10] = { 0 }, k3[10] = { 0 }, k4[10] = { 0 };  //俩个复数的实部和虚部
+    float shu1 = 0, shu2 = 0, shu3 = 0, shu4 = 0;
+    char xuhao2[100][100] = { 0 };
+public:
+    int p = 0;   //全局变量，作为输入判断的控制条件
+    int comp()
+    {
+        int k = 0;
+        getline(cin, m);            //把输入的字符串保存到m中
+        /*if (m[0] < 0 || m[0] >127) { p = 1; return p; }
+         
+         for (int i = 1; i < m.size(); i++)
+         {
+         if (!(m[i] >= 48 && m[i] <= 57) || m[i] != 43 || m[i] != 42 || m[i] != 45 || m[i] != 47 || m[i] != 'i') { p = 1; return p; }
+         if (m[i] == 43 || m[i] == 42 || m[i] == 45 || m[i] == 47)
+         {
+         if (m[i + 1] == 43 || m[i + 1] == 42 || m[i + 1] == 45 || m[i + 1] == 47 || m[i - 1] == 43 || m[i - 1] == 42 || m[i - 1] == 45 || m[i - 1] == 47) { p = 1; return p;}  //运算符左右不能是运算符
+         }
+         if (m[i] == 'i')
+         {
+         if (m[i + 1] == 'i' || m[i - 1] == 'i') { p = 1; return p;}    //只要不是重复的i就行
+         }
+         }
+         for (int g = 0; g < m.size(); g++)
+         {
+         if (m[g] == '(' || m[g] == ')') { k++; }
+         }
+         if (k % 2 == 0) { p = 0; }
+         if (k % 2 != 0) { p = 1; return p; }*/
+        return p;
+    }
+    void setdata()           //处理字符串的函数
+    {
+        //先遍历字符串，遇到数把，如果不是复数的实部，就转换成+0i,如果是0i,没有实部就补充0+，再用数字序号来替换字符串，
+        for (int w = 0; w < m.size(); w++)  //先对这个数学表达式进行预处理，如果是负数，转换成  0-， 如果是单独一个i ，弄成  1i
+        {
+            if (m[0] == '-')
+            {
+                string str = "0";
+                m.insert(w, str);
+            }
+            if (m[w] == '-' && m[w-1]=='(' )  //代表是负数
+            {
+                string str = "0";
+                m.insert(w, str);
+            }
+            if (m[0] == 'i')
+            {
+                string str = "1";
+                m.insert(w, str);
+            }
+            if (m[w] == 'i' && (m[w - 1] == '*' || m[w - 1] == '-' || m[w - 1] == '+' || m[w - 1] == '/' || m[w - 1] == '('))
+            {
+                string str = "1";
+                m.insert(w, str);
+            }
+        }
+        long num = 0;  //这个是记录有多少个替换的复数，设置成全局变量
+        for (int i = 0; i < m.size(); i++)
+        {
+            if (m[i] >= 48 && m[i] <= 57)          //如果是数字的话，开始判断是否是复数
+            {
+                
+                int p = i;  //记录现在的i位置，为了后面替换方便  要记住原始 的i位置
+                int c = 0;
+                int ii = 0;
+                char k[100] = { 0 };                //把带小数点或者不带小数点的数先保存起来
+                do{
+                    k[c] = m[i];
+                    c++;
+                    i++;
+                    ii = i;   //记录保存数字之后的i位置
+                } while ((m[i] > 47 && m[i] < 58) || m[i]=='.');  //开始找这个数的下一个是什么符号
+                if (m[i] == 'i')   //说明这是一个虚部，没有实部的虚部
+                {
+                    k[c] = 'i';
+                    char kz[100] = {0};
+                    for (int yy = 0; yy < 100; yy++)
+                    {
+                        kz[yy] = k[yy];
+                    }
+                    k[0] = '0'; k[1] = '+';
+                    for (int y = 0; y < 7; y++)
+                    {
+                        k[y + 2] = kz[y];   //现在k里面保存的就是  0+numi
+                    }
+                    for (int x = 0; x < 100; x++) {  //同样把相应的复数保存到数组里面      行数为序列
+                        xuhao2[num][x] = k[x];
+                    }
+                    stringstream ss;
+                    ss << num;
+                    string strnum = ss.str();
+                    m.replace(p, c + 1, strnum);
+                    num++;
+                    goto _1;
+                }
+                
+                if (m[i] == ')' || m[i]=='*' || m[i]=='/' || i-1==0 || m[i-2]=='*' || m[i-2]=='/'|| m[i]==NULL )  //说明这个数是是没有虚部的实数,给他补充成+0i
+                {
+                    k[c] = '+';
+                    k[c + 1] = '0';
+                    k[c + 2] = 'i';
+                    for (int x = 0; x < 100; x++) {  //把完成扩展的实数放到二维数组的的某行，行数为序列
+                        xuhao2[num][x] = k[x];
+                    }
+                    stringstream ss;
+                    ss << num;
+                    string strnum = ss.str();
+                    m.replace(p,c, strnum);
+                    num++;   //下一个序列
+                    goto _1;
+                }
+                if (m[i] == '+' || m[i] == '-')   //如果数字的下一位是+—有可能是复数
+                {
+                    do {                 //如果后面是数字就+1，然后一直遍历到i，
+                        i++;
+                    } while ((m[i] >= 48 && m[i] <= 57) || m[i] == '.');
+                    if (m[i] == 'i' && m[i+1]!='/' && m[i + 1] != '*' )    //说明这是一个复数
+                    {
+                        do {
+                            k[c] = m[ii];
+                            c++;
+                            ii++;
+                        } while (m[ii] != 'i');
+                        k[c] = 'i'; //最后补上一个i
+                        for (int x = 0; x < 100; x++) {  //把完成扩展的实数放到二维数组的的某行，行数为序列
+                            xuhao2[num][x] = k[x];
+                        }
+                        if (m[p - 1] == '(' && m[p+c+1]==')')
+                        {
+                            stringstream ss;
+                            ss << num;
+                            string strnum = ss.str();
+                            m.replace(p-1, c + 3, strnum);
+                            num++;
+                            goto _2;
+                        }   //下一个序列
+                        if (m[p - 1] == '(' && m[p + c + 1] != ')')
+                        {
+                            stringstream ss;
+                            ss << num;
+                            string strnum = ss.str();
+                            m.replace(p , c + 1, strnum);
+                            num++;
+                        }   //下一个序列
+                        else
+                        {
+                            stringstream ss;
+                            ss << num;
+                            string strnum = ss.str();
+                            m.replace(p , c + 1, strnum);
+                            num++;
+                        }   //下一个序列
+                    _2:;
+                    }
+                    else {
+                        k[c] = '+';
+                        k[c + 1] = '0';
+                        k[c + 2] = 'i';
+                        for (int x = 0; x < 100; x++) {  //把完成扩展的实数放到二维数组的的某行，行数为序列
+                            xuhao2[num][x] = k[x];
+                        }
+                        stringstream ss;
+                        ss << num;
+                        string strnum = ss.str();
+                        m.replace(p, c, strnum);
+                        num++;   //下一个序列
+                    }
+                _1:;
+                }
+                i = p;
+            }
+        }
+    }
+    //现在m字符串里面保存的是换成复数之后的序号，序号对应的是二维数组里面的行数，行里面保存的是复数，现在就是用中缀转后缀的方式，先提取出计算顺序，然后依照行数去提取数组
+    //再把数组里面的转换成复数的计算形式，利用重载计算出值
+    zhong_hou test;
+    void ji_ti(Fu_num C,long num)
+    {
+        float creal = C.real;
+        float cimag = C.imag;
+        string str1,str2;
+        ostringstream os;
+        os << creal;
+        str1.append(os.str());
+        ostringstream os2;
+        os2 << cimag;
+        str2.append(os2.str());
+        xuhao2[num][0] = { 0 };   //第0行清空
+        char zhongjian[100] = { 0 };
+        int u = 0;
+        for ( u = 0; str1[u]!=NULL; u++)
+        {
+            zhongjian[u] = str1[u];
+        }
+        zhongjian[u] = '+';
+        int u1 = 0;
+        for ( u1 = 0; str2[u1] != NULL; u1++)
+        {
+            zhongjian[u+u1+1] = str2[u1];
+        }
+        zhongjian[u + u1+1] = 'i';
+        for (int f = 0; f < 100; f++)
+        {
+            xuhao2[num][f] = zhongjian[f];
+        }
+    }
+    
+    void num_tiqu(char num[100],int q) {
+        
+        for (int e = 0; e < 100; e++)      //先把num1的实部虚部提取出来
+        {
+            int ee = 0;
+            int eee = 0;
+            if (num[e] == '+' )
+            {
+                for (int e1 = 0; e1 < e; e1++)
+                {
+                    if (q == 1)
+                    {
+                        k1[ee] = num[e1];
+                        ee++;
+                    }
+                    if (q == 2)
+                    {
+                        k3[ee] = num[e1];
+                        ee++;
+                    }
+                }
+                for (int e2 = e + 1; num[e2] != 'i'; e2++)
+                {
+                    if (q == 1) {
+                        k2[eee] = num[e2]; eee++;
+                    }
+                    if (q == 2) {
+                        k4[eee] = num[e2]; eee++;
+                    }
+                }
+            }
+            if ( num[e] == '-' && e!=0)
+            {
+                for (int e1 = 0; e1 < e; e1++)
+                {
+                    if (q == 1) {
+                        k1[ee] = num[e1];
+                        ee++;
+                    }
+                    if (q == 2) {
+                        k3[ee] = num[e1];
+                        ee++;
+                    }
+                }
+                for (int e2 = e ; num[e2] != 'i'; e2++)
+                {
+                    if (q == 1) {
+                        k2[eee] = num[e2]; eee++;
+                    }
+                    if (q == 2) {
+                        k4[eee] = num[e2]; eee++;
+                    }
+                }
+            }
+        }
+    }
+    void jisuan()
+    {
+        void tiqu();
+        test.fuzhi(m);
+        test.zhuan_huan();
+        //test.hou_result();
+        std::string hou;//把栈里面的东西取出来
+        for (int i = 0;; i++)
+        {
+            char p = hou_stack.pop();
+            if (p != '#')
+            {
+                hou.insert(i, 1, p);
+            }
+            else { break; }
+        }
+        
+        std::string hou2;  //把倒序的后缀表达式转正
+        for (int i = 0; i < hou.size(); i++)
+        {
+            char m = hou[hou.size() - i - 1]; hou2.insert(i, 1, m);
+        }
+        float num = 99;
+        for (int i = 0; i < hou2.size(); i++)
+        {
+            std::string x = hou2.substr(i, 1);
+            char m = x[0];
+            if (m >= 48 && m <= 57)  //数字的话入栈
+            {
+                float c = (float)m - '0';
+                stack.push_num(c);
+            }
+            else {
+                int shu_2 = stack.pop_num();//右边操作数
+                int shu_1 = stack.pop_num();//左边操作数
+                char num2[100] = { 0 };
+                char num1[100] = { 0 };
+                
+                for (int r= 0; r < 100; r++)
+                {
+                    num2[r] = xuhao2[shu_2][r];    //提取出来序号对应的复数字符串数组
+                    num1[r] = xuhao2[shu_1][r];
+                }
+                num_tiqu(num1,1);
+                num_tiqu(num2,2);
+                shu1 = strtod(k1, NULL);
+                shu2 = strtod(k2, NULL);
+                shu3 = atof(k3);
+                shu4 = strtod(k4, NULL);
+                Fu_num A(shu1, shu2);
+                Fu_num B(shu3, shu4);
+                Fu_num C;
+                
+                switch (m)                //每一次都是把01弹出来计算，就算完之后再放进去，那么用0号位置来存放计算后的复数数组，
+                {
+                    case('+'):
+                        C = A + B;
+                        ji_ti(C,num);
+                        stack.push_num(num);
+                        break;
+                    case('-'):
+                        C = A -B;
+                        ji_ti(C,num);
+                        stack.push_num(num);
+                        break;
+                    case('*'):
+                        C = A * B;
+                        ji_ti(C,num);
+                        stack.push_num(num);
+                        break;
+                    case('/'):
+                        C = A / B;
+                        ji_ti(C,num);
+                        stack.push_num(num);
+                        break;
+                }
+                num--;
+                memset(k1, 0, sizeof(k1));
+                memset(k2, 0, sizeof(k2));
+                memset(k3, 0, sizeof(k3));
+                memset(k4, 0, sizeof(k4));
+            }
+        }
+        
+        //现在优化最后的结果，把+-换成-，1i换成i
+        int a = stack.pop_num();
+        for (int t = 0; t < 100; t++)
+        {
+            if (xuhao2[a][t] == '+' && xuhao2[a][t + 1] == '-') { goto _3; }
+            cout << xuhao2[a][t];
+        _3:;
+        }
+        cout << endl;
+        
+    }
+    void toFloatNum() {    //把char型的数组转换成数字
+        shu1 = strtod(k1, NULL);
+        shu2 = strtod(k2, NULL);
+        shu3 = atof(k3);
+        shu4 = strtod(k4, NULL);
+    }
+    Fu_num(float real = 0, float imag = 0) //作为一个构造函数，为后面构造方便
+    {
+        this->real = real;
+        this->imag = imag;
+    }
+    Fu_num operator+(const Fu_num &y) {   //重载+号
+        Fu_num x;
+        x.real = this->real + y.real;
+        x.imag= this->imag + y.imag;
+        return x;
+    }
+    Fu_num operator-(const Fu_num &y) {   //重载+号
+        Fu_num x;
+        x.real = this->real - y.real;
+        x.imag = this->imag - y.imag;
+        return x;
+    }
+    friend Fu_num operator * (const Fu_num &x, const Fu_num &y);
+    friend Fu_num operator / (const Fu_num &x, const Fu_num &y);
+};
+Fu_num operator * (const Fu_num &x, const Fu_num &y) {
+    Fu_num c;
+    c.real = x.real * y.real - x.imag * y.imag;
+    c.imag = x.imag * y.real + x.real*y.imag;
+    return c;
+}
+Fu_num operator /(const Fu_num &x, const Fu_num &y) {
+    Fu_num c;
+    c.real = (x.real * y.real + x.imag * y.imag)/(y.real*y.real+y.imag*y.imag);
+    c.imag = (x.imag * y.real - x.real*y.imag) / (y.real*y.real + y.imag*y.imag);
+    return c;
+}
+Fu_num test;
+int main()
+{
+    cout << "请输入需要计算的复数计算式:" << endl;
+    int p=test.comp();
+    if (p == 0) {
+        test.setdata();
+        test.jisuan();
+    }
+    else {
+        cout << "输入不规范，检查 输入！" << endl;
+    }
+    system("pause");
+    return 0;
+}
+
